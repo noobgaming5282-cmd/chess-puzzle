@@ -1,282 +1,236 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Puzzle Racer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<div style="text-align: center; margin: 30px 0;">
+    <div id="chess-game-container" style="max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); border: 2px solid #3498db;">
+        <h2 style="color: #2c3e50; margin-bottom: 20px;">♞ Chess Puzzle Racer</h2>
         
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .game-container {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 2em;
-        }
-        
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            margin: 20px 0;
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-        
-        #timer {
-            color: #e74c3c;
-        }
-        
-        #score {
-            color: #27ae60;
-        }
-        
-        #board {
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        
-        #controls {
-            margin: 25px 0;
-        }
-        
-        #startBtn {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2em;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        #startBtn:hover {
-            background: #2980b9;
-        }
-        
-        #startBtn:active {
-            transform: translateY(2px);
-        }
-        
-        .instructions {
-            color: #666;
-            margin-top: 20px;
-            font-size: 0.9em;
-            line-height: 1.4;
-        }
-
-        @media (max-width: 480px) {
-            .game-container {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 1.5em;
-            }
-            
-            .game-info {
-                font-size: 1.2em;
-            }
-            
-            #startBtn {
-                padding: 12px 30px;
-                font-size: 1.1em;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="game-container">
-        <h1>♞ Chess Puzzle Racer</h1>
-        
-        <div class="game-info">
-            <div id="timer">⏰ Time: 60s</div>
-            <div id="score">🏆 Score: 0</div>
+        <div style="display: flex; justify-content: space-between; margin: 25px 0; font-size: 22px; font-weight: bold;">
+            <div id="game-timer" style="color: #e74c3c;">⏰ Time: 60s</div>
+            <div id="game-score" style="color: #27ae60;">🏆 Score: 0</div>
         </div>
         
-        <div id="board"></div>
+        <div id="chess-board" style="width: 400px; height: 400px; margin: 0 auto; border: 2px solid #b58863;"></div>
         
-        <div id="controls">
-            <button id="startBtn">🎮 Start Game</button>
+        <div style="margin: 25px 0;">
+            <button id="game-start-btn" style="padding: 15px 40px; font-size: 18px; background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s;">🎮 Start Game</button>
         </div>
         
-        <div class="instructions">
-            <p><strong>How to play:</strong> Solve chess puzzles before time runs out! Each correct move gives +10 points.</p>
-        </div>
+        <p style="color: #7f8c8d; font-size: 14px; line-height: 1.5;">
+            <strong>How to play:</strong> Solve chess puzzles before time runs out!<br>
+            Drag and drop pieces to make the correct move. Each correct move = 10 points.
+        </p>
     </div>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+<!-- Load Chess Libraries -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+<script>
+// Wait for all libraries to load
+window.addEventListener('load', function() {
+    console.log('Page loaded, initializing chess game...');
     
-    <script>
-    class PuzzleRacer {
-        constructor() {
-            this.board = null;
-            this.game = null;
-            this.timeLeft = 60;
-            this.score = 0;
-            this.timer = null;
-            this.currentPuzzle = null;
-            this.isGameRunning = false;
-            
-            this.init();
+    // Initialize chess game
+    const game = new Chess();
+    let board = null;
+    let timeLeft = 60;
+    let score = 0;
+    let timer = null;
+    let currentPuzzle = null;
+    let gameActive = false;
+
+    // Chess puzzles database
+    const puzzles = [
+        {
+            fen: 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3',
+            solution: ['f3g5'], // Knight takes pawn
+            description: "Fork the king and queen"
+        },
+        {
+            fen: 'rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2',
+            solution: ['d8h4'], // Queen to h4 check
+            description: "Deliver checkmate"
+        },
+        {
+            fen: 'rnbqkbnr/ppp2ppp/3p4/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 3',
+            solution: ['f3e5'], // Knight takes pawn
+            description: "Win material"
         }
+    ];
 
-        init() {
-            this.game = new Chess();
-            this.board = Chessboard('board', {
-                position: 'start',
-                draggable: true,
-                onDrop: this.handleMove.bind(this),
-                pieceTheme: 'https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/img/chesspieces/wikipedia/{piece}.png'
-            });
-
-            document.getElementById('startBtn').addEventListener('click', () => {
-                this.startGame();
-            });
-        }
-
-        async startGame() {
-            if (this.isGameRunning) return;
-            
-            this.isGameRunning = true;
-            this.timeLeft = 60;
-            this.score = 0;
-            this.updateDisplay();
-            
-            document.getElementById('startBtn').textContent = 'Game Running...';
-            document.getElementById('startBtn').disabled = true;
-            
-            // Clear existing timer
-            if (this.timer) {
-                clearInterval(this.timer);
-            }
-            
-            // Start countdown
-            this.timer = setInterval(() => {
-                this.timeLeft--;
-                this.updateDisplay();
-                
-                if (this.timeLeft <= 0) {
-                    this.endGame();
-                }
-            }, 1000);
-
-            await this.loadNewPuzzle();
-        }
-
-        async loadNewPuzzle() {
-            try {
-                // Try to get a puzzle from Lichess API
-                const response = await fetch('https://lichess.org/api/puzzle/daily');
-                const puzzle = await response.json();
-                this.currentPuzzle = puzzle;
-                
-                this.game.load(puzzle.fen);
-                this.board.position(puzzle.fen);
-                
-            } catch (error) {
-                console.log('Using local puzzle');
-                this.loadLocalPuzzle();
-            }
-        }
-
-        loadLocalPuzzle() {
-            // Local fallback puzzles
-            const puzzles = [
-                {
-                    fen: 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1',
-                    solution: ['f3g5']
-                },
-                {
-                    fen: 'rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 1',
-                    solution: ['d8h4']
-                },
-                {
-                    fen: 'rnbqkbnr/ppp2ppp/3p4/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1',
-                    solution: ['f3e5']
-                }
-            ];
-            
-            this.currentPuzzle = puzzles[Math.floor(Math.random() * puzzles.length)];
-            this.game.load(this.currentPuzzle.fen);
-            this.board.position(this.currentPuzzle.fen);
-        }
-
-        handleMove(source, target) {
-            if (!this.isGameRunning) return 'snapback';
-            
-            const move = this.game.move({
-                from: source,
-                to: target,
-                promotion: 'q'
-            });
-
-            // Illegal move
-            if (move === null) return 'snapback';
-
-            // Check if correct move
-            if (this.isCorrectMove(move)) {
-                this.score += 10;
-                this.updateDisplay();
-                setTimeout(() => this.loadNewPuzzle(), 500);
-            }
-        }
-
-        isCorrectMove(move) {
-            const moveStr = move.from + move.to;
-            return this.currentPuzzle.solution.includes(moveStr);
-        }
-
-        updateDisplay() {
-            document.getElementById('timer').textContent = `⏰ Time: ${this.timeLeft}s`;
-            document.getElementById('score').textContent = `🏆 Score: ${this.score}`;
-        }
-
-        endGame() {
-            this.isGameRunning = false;
-            clearInterval(this.timer);
-            
-            document.getElementById('startBtn').textContent = '🎮 Play Again';
-            document.getElementById('startBtn').disabled = false;
-            
-            alert(`🎯 Game Over!\n\nYour final score: ${this.score}\n\nClick "Play Again" to restart!`);
-            
-            // Reset board
-            this.game = new Chess();
-            this.board.position('start');
+    // Initialize the chessboard
+    function initChessboard() {
+        console.log('Initializing chessboard...');
+        board = Chessboard('chess-board', {
+            position: 'start',
+            draggable: true,
+            onDrop: handleMove,
+            pieceTheme: 'https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/img/chesspieces/wikipedia/{piece}.png',
+            showErrors: true
+        });
+        
+        // Test if board initialized
+        if (board) {
+            console.log('Chessboard initialized successfully!');
+        } else {
+            console.error('Chessboard failed to initialize');
         }
     }
 
-    // Initialize the game when page loads
-    document.addEventListener('DOMContentLoaded', () => {
-        new PuzzleRacer();
-    });
-    </script>
-</body>
-</html>
+    // Start game function
+    function startGame() {
+        console.log('Start game clicked');
+        
+        if (gameActive) {
+            console.log('Game already active');
+            return;
+        }
+        
+        gameActive = true;
+        timeLeft = 60;
+        score = 0;
+        updateDisplay();
+        
+        const startBtn = document.getElementById('game-start-btn');
+        startBtn.textContent = 'Game Running...';
+        startBtn.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+        startBtn.disabled = true;
+        
+        // Clear any existing timer
+        if (timer) {
+            clearInterval(timer);
+        }
+        
+        // Start countdown timer
+        timer = setInterval(() => {
+            timeLeft--;
+            updateDisplay();
+            
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }, 1000);
+
+        // Load first puzzle
+        loadNewPuzzle();
+    }
+
+    // Load a new puzzle
+    function loadNewPuzzle() {
+        if (!puzzles.length) return;
+        
+        // Select random puzzle
+        const randomIndex = Math.floor(Math.random() * puzzles.length);
+        currentPuzzle = puzzles[randomIndex];
+        
+        console.log('Loading puzzle:', currentPuzzle.fen);
+        
+        // Load position into chess.js
+        game.load(currentPuzzle.fen);
+        
+        // Update board display
+        if (board) {
+            board.position(currentPuzzle.fen);
+        }
+    }
+
+    // Handle piece moves
+    function handleMove(source, target) {
+        console.log('Move attempted:', source, 'to', target);
+        
+        if (!gameActive) {
+            console.log('Game not active - snapping back');
+            return 'snapback';
+        }
+        
+        // Make the move in chess.js
+        const move = game.move({
+            from: source,
+            to: target,
+            promotion: 'q' // Always promote to queen for simplicity
+        });
+
+        // Illegal move
+        if (move === null) {
+            console.log('Illegal move - snapping back');
+            return 'snapback';
+        }
+
+        console.log('Legal move made:', move.san);
+        
+        // Check if this is the correct puzzle solution
+        const moveStr = move.from + move.to;
+        if (currentPuzzle.solution.includes(moveStr)) {
+            console.log('Correct move!');
+            score += 10;
+            updateDisplay();
+            
+            // Load next puzzle after short delay
+            setTimeout(() => {
+                loadNewPuzzle();
+            }, 800);
+        } else {
+            console.log('Incorrect move');
+            // For now, we just allow any legal move
+            // You can add penalty logic here if needed
+        }
+        
+        return true;
+    }
+
+    // Update display
+    function updateDisplay() {
+        document.getElementById('game-timer').textContent = `⏰ Time: ${timeLeft}s`;
+        document.getElementById('game-score').textContent = `🏆 Score: ${score}`;
+    }
+
+    // End game
+    function endGame() {
+        console.log('Game ended');
+        gameActive = false;
+        
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
+        
+        const startBtn = document.getElementById('game-start-btn');
+        startBtn.textContent = '🎮 Play Again';
+        startBtn.style.background = 'linear-gradient(135deg, #27ae60, #229954)';
+        startBtn.disabled = false;
+        
+        // Show game over message
+        setTimeout(() => {
+            alert(`🎯 Game Over!\n\nYour final score: ${score}\n\nGreat job! Click "Play Again" to restart.`);
+        }, 100);
+        
+        // Reset board to starting position
+        game.reset();
+        if (board) {
+            board.position('start');
+        }
+    }
+
+    // Initialize everything when page is ready
+    function initializeGame() {
+        console.log('Initializing game...');
+        
+        // Initialize chessboard first
+        initChessboard();
+        
+        // Add event listener to start button
+        const startBtn = document.getElementById('game-start-btn');
+        if (startBtn) {
+            startBtn.addEventListener('click', startGame);
+            console.log('Start button event listener added');
+        } else {
+            console.error('Start button not found!');
+        }
+        
+        console.log('Game initialization complete');
+    }
+
+    // Start initialization
+    initializeGame();
+});
+</script>
